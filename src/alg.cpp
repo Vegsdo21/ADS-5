@@ -1,7 +1,6 @@
 // Copyright 2025 NNTU-CS
 #include <string>
 #include <cctype>
-#include <sstream> 
 #include "tstack.h"
 
 int getPriority(char op) {
@@ -16,7 +15,9 @@ std::string infx2pstfx(const std::string& inf) {
   int i = 0;
 
   while (i < inf.length()) {
-    if (std::isdigit(inf[i])) {
+    if (std::isspace(inf[i])) {
+      i++;
+    } else if (std::isdigit(inf[i])) {
       while (i < inf.length() && std::isdigit(inf[i])) {
         res += inf[i++];
       }
@@ -29,12 +30,10 @@ std::string infx2pstfx(const std::string& inf) {
         res += opStack.pop();
         res += ' ';
       }
-      if (!opStack.isEmpty()) opStack.pop();  // убрать '('
+      if (!opStack.isEmpty()) opStack.pop();
       i++;
-    } else if (inf[i] == '+' || inf[i] == '-' ||
-               inf[i] == '*' || inf[i] == '/') {
-      while (!opStack.isEmpty() &&
-             getPriority(opStack.peek()) >= getPriority(inf[i])) {
+    } else if (inf[i] == '+' || inf[i] == '-' || inf[i] == '*' || inf[i] == '/') {
+      while (!opStack.isEmpty() && getPriority(opStack.peek()) >= getPriority(inf[i])) {
         res += opStack.pop();
         res += ' ';
       }
@@ -50,31 +49,38 @@ std::string infx2pstfx(const std::string& inf) {
     res += ' ';
   }
 
+  if (!res.empty() && res.back() == ' ')
+    res.pop_back();
+
   return res;
 }
 
 int eval(const std::string& post) {
   TStack<int, 100> stack;
-  std::istringstream input(post);
-  std::string token;
+  int i = 0;
 
-  while (input >> token) {
-    if (std::isdigit(token[0])) {
-      stack.push(std::stoi(token));
-    } else {
-      if (stack.isEmpty()) throw std::runtime_error("Stack underflow");
+  while (i < post.length()) {
+    if (std::isspace(post[i])) {
+      i++;
+    } else if (std::isdigit(post[i])) {
+      int num = 0;
+      while (i < post.length() && std::isdigit(post[i])) {
+        num = num * 10 + (post[i] - '0');
+        i++;
+      }
+      stack.push(num);
+    } else if (post[i] == '+' || post[i] == '-' || post[i] == '*' || post[i] == '/') {
       int b = stack.pop();
-      if (stack.isEmpty()) throw std::runtime_error("Stack underflow");
       int a = stack.pop();
-
-      if (token == "+") stack.push(a + b);
-      else if (token == "-") stack.push(a - b);
-      else if (token == "*") stack.push(a * b);
-      else if (token == "/") stack.push(a / b);
-      else throw std::runtime_error("Unknown operator");
+      if (post[i] == '+') stack.push(a + b);
+      else if (post[i] == '-') stack.push(a - b);
+      else if (post[i] == '*') stack.push(a * b);
+      else if (post[i] == '/') stack.push(a / b);
+      i++;
+    } else {
+      i++;
     }
   }
 
-  if (stack.isEmpty()) throw std::runtime_error("Stack underflow");
   return stack.pop();
 }
