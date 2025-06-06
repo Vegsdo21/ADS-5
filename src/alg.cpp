@@ -2,7 +2,7 @@
 #include <string>
 #include <sstream>
 #include <cctype>
-#include <vector>  
+#include <vector>
 #include "tstack.h"
 
 int precedence(char op) {
