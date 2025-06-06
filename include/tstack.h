@@ -11,20 +11,15 @@ class TStack {
   TStack() : top(-1) {}
 
   void push(const T& val) {
-    if (top < size - 1)
-      data[++top] = val;
+    if (top < size - 1) data[++top] = val;
   }
 
   T pop() {
-    if (!isEmpty())
-      return data[top--];
-    return T();
+    return data[top--];
   }
 
   T peek() const {
-    if (!isEmpty())
-      return data[top];
-    return T();
+    return data[top];
   }
 
   bool isEmpty() const {
