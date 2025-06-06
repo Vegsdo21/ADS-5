@@ -1,5 +1,7 @@
+// Copyright 2025 NNTU-CS
 #include <string>
 #include <cctype>
+#include <sstream> 
 #include "tstack.h"
 
 int getPriority(char op) {
@@ -27,7 +29,7 @@ std::string infx2pstfx(const std::string& inf) {
         res += opStack.pop();
         res += ' ';
       }
-      if (!opStack.isEmpty()) opStack.pop();
+      if (!opStack.isEmpty()) opStack.pop();  // убрать '('
       i++;
     } else if (inf[i] == '+' || inf[i] == '-' ||
                inf[i] == '*' || inf[i] == '/') {
@@ -53,29 +55,26 @@ std::string infx2pstfx(const std::string& inf) {
 
 int eval(const std::string& post) {
   TStack<int, 100> stack;
-  int i = 0;
+  std::istringstream input(post);
+  std::string token;
 
-  while (i < post.length()) {
-    if (std::isdigit(post[i])) {
-      int num = 0;
-      while (i < post.length() && std::isdigit(post[i])) {
-        num = num * 10 + (post[i] - '0');
-        i++;
-      }
-      stack.push(num);
-    } else if (post[i] == '+' || post[i] == '-' ||
-               post[i] == '*' || post[i] == '/') {
-      int b = stack.pop();
-      int a = stack.pop();
-      if (post[i] == '+') stack.push(a + b);
-      else if (post[i] == '-') stack.push(a - b);
-      else if (post[i] == '*') stack.push(a * b);
-      else if (post[i] == '/') stack.push(a / b);
-      i++;
+  while (input >> token) {
+    if (std::isdigit(token[0])) {
+      stack.push(std::stoi(token));
     } else {
-      i++;
+      if (stack.isEmpty()) throw std::runtime_error("Stack underflow");
+      int b = stack.pop();
+      if (stack.isEmpty()) throw std::runtime_error("Stack underflow");
+      int a = stack.pop();
+
+      if (token == "+") stack.push(a + b);
+      else if (token == "-") stack.push(a - b);
+      else if (token == "*") stack.push(a * b);
+      else if (token == "/") stack.push(a / b);
+      else throw std::runtime_error("Unknown operator");
     }
   }
 
+  if (stack.isEmpty()) throw std::runtime_error("Stack underflow");
   return stack.pop();
 }
