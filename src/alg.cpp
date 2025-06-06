@@ -1,3 +1,5 @@
+// Copyright 2025 NNTU-CS
+
 #include <string>
 #include <cctype>
 #include "tstack.h"
@@ -14,7 +16,9 @@ std::string infx2pstfx(const std::string& inf) {
   int i = 0;
 
   while (i < inf.length()) {
-    if (std::isdigit(inf[i])) {
+    if (std::isspace(inf[i])) {
+      i++;
+    } else if (std::isdigit(inf[i])) {
       while (i < inf.length() && std::isdigit(inf[i])) {
         res += inf[i++];
       }
@@ -27,12 +31,10 @@ std::string infx2pstfx(const std::string& inf) {
         res += opStack.pop();
         res += ' ';
       }
-      if (!opStack.isEmpty())
-        opStack.pop();
+      if (!opStack.isEmpty()) opStack.pop();
       i++;
-    } else if (inf[i] == '+' || inf[i] == '-' ||
-               inf[i] == '*' || inf[i] == '/') {
-      while (!opStack.isEmpty() &&
+    } else if (inf[i] == '+' || inf[i] == '-' || inf[i] == '*' || inf[i] == '/') {
+      while (!opStack.isEmpty() && 
              getPriority(opStack.peek()) >= getPriority(inf[i])) {
         res += opStack.pop();
         res += ' ';
@@ -49,6 +51,9 @@ std::string infx2pstfx(const std::string& inf) {
     res += ' ';
   }
 
+  if (!res.empty() && res.back() == ' ')
+    res.pop_back();
+
   return res;
 }
 
@@ -57,25 +62,22 @@ int eval(const std::string& post) {
   int i = 0;
 
   while (i < post.length()) {
-    if (std::isdigit(post[i])) {
+    if (std::isspace(post[i])) {
+      i++;
+    } else if (std::isdigit(post[i])) {
       int num = 0;
       while (i < post.length() && std::isdigit(post[i])) {
         num = num * 10 + (post[i] - '0');
         i++;
       }
       stack.push(num);
-    } else if (post[i] == '+' || post[i] == '-' ||
-               post[i] == '*' || post[i] == '/') {
+    } else if (post[i] == '+' || post[i] == '-' || post[i] == '*' || post[i] == '/') {
       int b = stack.pop();
       int a = stack.pop();
-      if (post[i] == '+')
-        stack.push(a + b);
-      else if (post[i] == '-')
-        stack.push(a - b);
-      else if (post[i] == '*')
-        stack.push(a * b);
-      else if (post[i] == '/')
-        stack.push(a / b);
+      if (post[i] == '+') stack.push(a + b);
+      else if (post[i] == '-') stack.push(a - b);
+      else if (post[i] == '*') stack.push(a * b);
+      else if (post[i] == '/') stack.push(a / b);
       i++;
     } else {
       i++;
